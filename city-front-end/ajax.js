@@ -1,51 +1,47 @@
-function showAllBook() {
+function showAllCity() {
     $.ajax({
         type: "GET",
-        url: "http://localhost:8080/books",
-        success: function (books) {
-            // console.log(books);
-            let booksHtml = "";
-            for (let i = 0; i < books.length; i++) {
-                booksHtml += `
+        url: "http://localhost:8080/city",
+        success: function (city) {
+            console.log(city);
+            let cityHtml = "";
+            for (let i = 0; i < city.length; i++) {
+                cityHtml += `
                 <tr>
-                <td>${books[i].code}</td>
-                <td>${books[i].name}</td>
-                <td>${books[i].author}</td>
-                <td>${books[i].price}</td>
-                <td><a href="#editEmployeeModal" onclick="formEdit(${books[i].id})" class="edit" data-toggle="modal">
+                <td><button onclick="showOneCity(${city[i].id})">${city[i].name}</button></td>
+                <td>${city[i].country}</td>
+                <td><a href="#editEmployeeModal" onclick="formEdit(${city[i].id})" class="edit" data-toggle="modal">
                 <i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
-                <a  onclick="deleteBook(${books[i].id})" class="delete" data-toggle="modal">
-                <i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a></td>
+                <a  onclick="deleteCity(${city[i].id})" class="delete" data-toggle="modal">
+                <i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
+                </td>
                 </tr>`;
             }
-            document.getElementById("book-list").innerHTML = booksHtml;
+            document.getElementById("city-list").innerHTML = cityHtml;
         },
         error: function () {
-            alert("Không thể hiển thị danh sách sách!");
+            alert("Không thể hiển thị danh sách thành phố!");
         }
     });
-    $.ajax({
-        type: "GET",
-        url: "http://localhost:8080/books/total-price",
-        success: function (totalPrice) {
-            document.getElementById("total-price").innerHTML = totalPrice;
-        }
-    })
 }
-showAllBook();
+showAllCity();
 
-//create
+//create city
 function save() {
     event.preventDefault();
-    let code = $("#code").val();
     let name = $("#name").val();
-    let author = $("#author").val();
-    let price = $("#price").val();
-    let newBook = {
-        code: code,
-        name: name,
-        author: author,
-        price: price
+    let country = $("#country").val();
+    let area = $("#area").val();
+    let population = $("#population").val();
+    let gdp = $("#gdp").val();
+    let description = $("#description").val();
+    let newCity = {
+        "name": name,
+        "country": country,
+        "area": area,
+        "population": population,
+        "gdp": gdp,
+        "description": description
     }
     $.ajax({
         headers: {
@@ -53,21 +49,21 @@ function save() {
             'Content-Type': 'application/json'
         },
         type: "POST",
-        url: "http://localhost:8080/books",
-        data: JSON.stringify(newBook),
-        success: showAllBook,
+        url: "http://localhost:8080/city/create",
+        data: JSON.stringify(newCity),
+        success: showAllCity,
         error: function () {
-            alert("Không thể thêm sách mới!");
+            alert("Không thể thêm thành phố!");
         }
     })
 }
 
-// delete book by id
-function deleteBook(id) {
+// delete city by id
+function deleteCity(id) {
     event.preventDefault();
     $.ajax({
         type: "DELETE",
-        url: "http://localhost:8080/books/" + id,
+        url: "http://localhost:8080/city/" + id,
         dataType: "json",
         success: function () {
             deleteConfirmation()
@@ -80,101 +76,84 @@ function deleteBook(id) {
 
 function deleteConfirmation() {
     if (confirm("Bạn có chắc chắn muốn xóa không?")) {
-        window.showAllBook();
+        window.showAllCity();
     }
 }
 
-// update book by id
+// update city by id
 function formEdit(id) {
-    let url = "http://localhost:8080/books/" + id;
+    let url = "http://localhost:8080/city/" + id;
     $.get(url, function (data) {
         $('#id').val(data.id);
-        $('#code1').val(data.code);
-        $('#name1').val(data.name);
-        $('#author1').val(data.author);
-        $('#price1').val(data.price);
+        $("#name-edit").val(data.name);
+        $("#country-edit").val(data.country);
+        $("#area-edit").val(data.area);
+        $("#population-edit").val(data.population);
+        $("#gdp-edit").val(data.gdp);
+        $("#description-edit").val(data.description);
     });
 }
 
-function updateBook() {
+function updateCity() {
     event.preventDefault();
     let id = $("#id").val();
-    let code = $("#code1").val();
-    let name = $("#name1").val();
-    let author = $("#author1").val();
-    let price = $("#price1").val();
-    let newBook = {
-        code: code,
-        name: name,
-        author: author,
-        price: price
+    let name = $("#name-edit").val();
+    let country = $("#country-edit").val();
+    let area = $("#area-edit").val();
+    let population = $("#population-edit").val();
+    let gdp = $("#gdp-edit").val();
+    let description = $("#description-edit").val();
+    let newCity = {
+        "name": name,
+        "country": country,
+        "area": area,
+        "population": population,
+        "gdp": gdp,
+        "description": description
     }
     $.ajax({
         type: "PUT",
-        url: "http://localhost:8080/books/" + id,
+        url: "http://localhost:8080/city/" + id,
         dataType: "json",
-        data: JSON.stringify(newBook),
+        data: JSON.stringify(newCity),
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
         success: function () {
-            // Hide edit form
             $('#editEmployeeModal').modal('hide');
-            showAllBook()
+            showAllCity()
         },
         error: function () {
-            alert('An error occurred while updating book data.');
+            alert('An error occurred while updating city data.');
         }
     });
 }
 
-// search
-function searchBooks() {
-    let name = $("#name-search").val().trim().toLowerCase();
-    let author = $("#author-search").val().trim().toLowerCase();
-    let minPrice = $("#minPrice-search").val();
-    let maxPrice = $("#maxPrice-search").val();
-    let resultSearch = {
-        name: name,
-        author: author,
-        minPrice: minPrice,
-        maxPrice: maxPrice
-    }
+function showOneCity(id) {
     $.ajax({
         type: "GET",
-        url: "http://localhost:8080/books/search?" + encodeURIParams(resultSearch),
-        success: function (books) {
-            // console.log(books);
-            displaySearchBooks(books)
-        }
-    })
-}
-
-function encodeURIParams(data) {
-    return Object.keys(data).map(function (key) {
-        return encodeURIComponent(key) + "=" + encodeURIComponent(data[key]);
-    }).join("&");
-}
-
-function displaySearchBooks(books) {
-    let search = "";
-    for (let i = 0; i < books.length; i++) {
-        search += `
+        url: "http://localhost:8080/city/" + id,
+        success: function (city) {
+            console.log(city);
+            let cityHtml;
+                cityHtml = `
                 <tr>
-                <td>${books[i].code}</td>
-                <td>${books[i].name}</td>
-                <td>${books[i].author}</td>
-                <td>${books[i].price}</td>
-                <td><a href="#editEmployeeModal" onclick="formEdit(${books[i].id})" class="edit" data-toggle="modal">
-                <i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
-                <a  onclick="deleteBook(${books[i].id})" class="delete" data-toggle="modal">
-                <i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a></td>
+                <td>${city.name}</td>
+                <td>${city.country}</td>
+                <td>${city.area}</td>
+                <td>${city.population}</td>
+                <td>${city.gdp}</td>
+                <td>${city.description}</td>
+                </td>
                 </tr>`;
-    }
-    document.getElementById("book-list").innerHTML = search;
+            document.getElementById("city-list").innerHTML = cityHtml;
+        },
+        error: function () {
+            alert("Không thể hiển thị chi tiết thành phố!");
+        }
+    });
 }
-
 
 
 
