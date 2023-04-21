@@ -57,7 +57,7 @@ public class CityController {
         return new ResponseEntity<>(cityOptional.get(), HttpStatus.OK);
     }
 
-    // get book detail
+    // get city detail
     @GetMapping("/{id}")
     public ResponseEntity<City> getOne(@PathVariable Long id) {
         Optional<City> bookOptional = cityService.findById(id);
